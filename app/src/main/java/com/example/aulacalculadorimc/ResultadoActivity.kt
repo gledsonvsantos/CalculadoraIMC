@@ -2,45 +2,55 @@ package com.example.aulacalculadorimc
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.TextView
+import android.widget.Toast
+import com.example.aulacalculadorimc.databinding.ActivityResultadoBinding
 
 class ResultadoActivity : AppCompatActivity() {
 
-    private lateinit var textPeso: TextView
-    private lateinit var textAltura: TextView
-    private lateinit var textResultado: TextView
+    private lateinit var binding: ActivityResultadoBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_resultado)
 
-        textPeso = findViewById(R.id.text_peso)
-        textAltura = findViewById(R.id.text_altura)
-        textResultado = findViewById(R.id.text_resultado)
+        // Inflate do layout via View Binding
+        binding = ActivityResultadoBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val bundle = intent.extras
-        if( bundle != null ){
+        // Recupera os valores passados pela MainActivity
+        // Se não existirem, retorna 0.0 como padrão
+        val peso = intent.getDoubleExtra("peso", 0.0)
+        val altura = intent.getDoubleExtra("altura", 0.0)
 
-            val peso = bundle.getDouble("peso")
-            val altura = bundle.getDouble("altura")
+        // Validação dos valores
+        if (peso <= 0.0 || altura <= 0.0) {
+            // Exibe um Toast para avisar o usuário
+            Toast.makeText(this, "Dados inválidos ou não recebidos!", Toast.LENGTH_LONG).show()
 
-            textPeso.text = "Peso informado $peso kg"
-            textAltura.text = "Altura informada $altura m"
+            // Exibe mensagens de erro no layout
+            binding.textPeso.text = "Peso inválido!"
+            binding.textAltura.text = "Altura inválida!"
+            binding.textResultado.text = "Não foi possível calcular o IMC."
 
-            val imc = peso / (altura * altura)
-
-            val resultado = if( imc < 18.5 ){
-                 "Baixo"
-            }else if( imc in 18.5 .. 24.9 ){
-                "Normal"
-            }else if( imc in 25.0 .. 29.9 ){
-                "Sobrepeso"
-            }else{
-                "Obeso"
-            }
-            textResultado.text = resultado
-
+            // Retorna para evitar continuar o cálculo
+            return
         }
 
+        // Exibe os valores recebidos nos TextViews
+        binding.textPeso.text = "Peso informado: $peso kg"
+        binding.textAltura.text = "Altura informada: $altura m"
+
+        // Cálculo do IMC
+        val imc = peso / (altura * altura)
+
+        // Categorização do IMC (exemplo simples)
+        val resultado = when {
+            imc < 18.5  -> "Baixo"
+            imc < 25.0  -> "Normal"
+            imc < 30.0  -> "Sobrepeso"
+            else        -> "Obeso"
+        }
+
+        // Exibe o resultado
+        binding.textResultado.text = "Resultado: $resultado"
     }
 }

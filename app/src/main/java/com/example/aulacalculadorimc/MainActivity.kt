@@ -3,40 +3,62 @@ package com.example.aulacalculadorimc
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
+import android.widget.Toast
+import com.example.aulacalculadorimc.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var btnCalcular: Button
-    private lateinit var editPeso: EditText
-    private lateinit var editAltura: EditText
+    // Usando View Binding para substituir findViewById
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        btnCalcular = findViewById(R.id.btn_calcular)
-        editPeso = findViewById(R.id.edit_peso)
-        editAltura = findViewById(R.id.edit_altura)
+        // Inflando o layout via View Binding
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        btnCalcular.setOnClickListener {
+        // Configura o botão de calcular
+        binding.btnCalcular.setOnClickListener {
+            validarCamposEAvancar()
+        }
+    }
 
-            val intent = Intent(this, ResultadoActivity::class.java)
+    private fun validarCamposEAvancar() {
+        // Obtemos as strings diretamente dos EditText
+        val pesoString = binding.editPeso.text.toString()
+        val alturaString = binding.editAltura.text.toString()
 
-            val peso = editPeso.text.toString()
-            val altura = editAltura.text.toString()
+        // Convertemos para Double usando toDoubleOrNull (evita NumberFormatException)
+        val peso = pesoString.toDoubleOrNull()
+        val altura = alturaString.toDoubleOrNull()
 
-            if( peso.isNotEmpty() && altura.isNotEmpty() ){
-
-                intent.putExtra("peso", peso.toDouble() )
-                intent.putExtra("altura", altura.toDouble() )
-
-            }
-
-            startActivity( intent )
-
+        // Verificação básica de preenchimento
+        if (pesoString.isBlank()) {
+            binding.editPeso.error = "Por favor, insira seu peso"
+            return
+        }
+        if (alturaString.isBlank()) {
+            binding.editAltura.error = "Por favor, insira sua altura"
+            return
         }
 
+        // Verificamos se são valores numéricos válidos
+        if (peso == null || peso <= 0.0) {
+            binding.editPeso.error = "Insira um valor de peso válido (maior que zero)"
+            return
+        }
+        if (altura == null || altura <= 0.0) {
+            binding.editAltura.error = "Insira um valor de altura válido (maior que zero)"
+            return
+        }
+
+        // Se chegamos até aqui, os valores são válidos
+        val intent = Intent(this, ResultadoActivity::class.java).apply {
+            putExtra("peso", peso)
+            putExtra("altura", altura)
+        }
+
+        startActivity(intent)
     }
 }
